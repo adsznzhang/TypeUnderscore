@@ -146,8 +146,100 @@
                 iteratee(obj[keys[i]], keys[i], obj);
             }
         }
-    }
+        return obj;
+    };
+    _.map = _.collect = function (obj, iteratee, context) {
+        iteratee = cb(iteratee, context);
+        var keys = !isArrayLike(obj) && _.keys(obj),
+            length = (keys || obj).length,
+            results = Array(length);
+        for (var index = 0; index < length; index++) {
+            var currentKey = keys ? keys[index] : index;
+            results[index] = iteratee(obj[currentKey], currentKey, obj);
+        }
+        return results;
+    };
+
+    var createReduce = function (dir) {
+        var reducer = function(obj, iteratee, memo, initial) {
+            var keys = !isArrayLike(obj) && _.keys(obj),
+                length = (keys || obj).length,
+                index = dir > 0 ? 0 : length -1;
+
+            if(!initial) {
+                memo = obj[keys ? keys[index] : index];
+                index += dir;
+            }
+            for(; index >= 0 && index < length; index += dir) {
+                var currentKey = keys ? keys[index] : index;
+                memo = iteratee(memo, obj[currentKey], currentKey, obj);
+            }
+            return memo;
+        };
+
+        return function(obj, iteratee, memo, context) {
+            var initial = arguments.length >= 3;
+            return reducer(obj, optimizeCb(iteratee, context, 4) ,memo,initial);
+        };
+    };
+
+    _.reduce = _.foldl = _.inject = createReduce(1);
+    _.reduce = _.foldl = _.createReduce(-1);
 
 
+    _.find = _.detect = function(obj, predicate, context) {
+        var keyFinder = isArrayLike(obj) ? _.findIndex : _.findKey;
+        var key = keyFinder(obj, predicate, context);
+        if(key !== void 0 && key !== -1) return obj[key];
+    };
+
+
+    _filter = _.select = function(obj,predicate, context) {
+        _.each(obj, function(value, index, list){
+            if(predicate(value, index, list)) results.push(value);
+        });
+        return results;
+    };
+
+
+    _.reject = function(obj, predicate, context) {
+        return _.filter(obj, _.negate(cb(predicate)), context);
+    };
+
+    _.every = _.all = function(obj, predicate, context) {
+        predicate = cb(predicate, context);
+        var keys = !isArrayLike(obj) && _.keys(obj),
+            length = (keys || obj).length;
+        for(var index = 0; index < length; index++) {
+            var currentKey = keys ? keys[index] : index;
+            if(!predicate(obj[currentKey], currentKey, obj)) return false;
+        }
+        return true;
+    };
+
+    _.some = _.any = function(obj, predicate, context) {
+        predicate = cb(predicate, context);
+        var keys = !isArrayLike(obj) && _.keys(obj),
+            length = (keys || obj).length;
+        for (var index = 0; index < length; index++) {
+            var currentKey = keys ? keys[index] : index;
+            if(predicate(obj[currentKey], currentKey, obj)) return true;
+        }
+        return false;
+    };
+
+    _.contains = _.includes = _.include = function(obj, item, fromIndex, guard) {
+        if(!isArrayLike(obj)) obj = _.values(obj);
+        if(typeof fromIndex != 'number' || guard) fromIndex = 0;
+        return _.indexOf(obj, item, fromIndex) >= 0;
+    };
+
+    _.invoke = restArgs(function(obj, method, args) {
+        var isFunc = _.isFunction(method);
+        return _.map(obj, function(value) {
+            var func = isFunc ? method : values[method];
+            return func == null ? func : func.apply(value, args);
+        });
+    });
 
 }());
