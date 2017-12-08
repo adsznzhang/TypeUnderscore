@@ -328,5 +328,99 @@
         return sample.slice(0, n);
     };
 
+    _.sortBy = function (obj, iteratee, context) {
+        var index = 0;
+        iteratee = cb(iteratee, context);
+
+        return _.pluck(_.map(obj, function(value, key, list){
+            return {
+                value: value,
+                index: index++,
+                criteria: iteratee(value, key, list)
+            };
+        }).sort(function(left, right) {
+            var a = left.criteria;
+            var b = right.criteria;
+            if(a !== b) {
+                if(a > b || a=== void 0) return 1;
+                if(a < b || a=== void 0) return -1;
+            }
+            return left.index - right.index;
+        }),'value');
+    };
+
+    var group = function (behavior, partition) {
+        return function(obj, iteratee, context) {
+            var result = partition ? [[], []] : {};
+            iteratee = cb(iteratee,context);
+            _.each(obj, function(value, index) {
+                var key = iteratee(value , index , obj);
+                behavior(result, value, key);
+            });
+            return result;
+        };
+    };
+
+    _.groupBy = group(function(result, value, key) {
+        if(_.has(result, key)) result[key].push(value); else result[key] = [value];
+    });
+
+    _indexBy = group(function(result, value, key) {
+        result[key] = value;
+    });
+
+
+
+    _.countBy = group(function(result, value, key) {
+        if(_.has(result, key)) result[key]++; else reslut[key] = 1;
+    });
+
+    
+    var reStrSymbol = /[^\ud800-\udfff]|[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udfff]/g;
+
+    _.toArray = function(obj) {
+        if(!obj) return [];
+        if(_.isArray(obj)) return slice.call(obj);
+        if(_.isString(obj)) {
+            return obj.match(reStrSymbol);
+        }
+
+        if(isArrayLike(obj)) return _.map(obj, _.identity);
+        return _.values(obj);
+    };
+
+    _.size = function(obj) {
+        if(obj == null) return 0;
+        return isArrayLike(obj) ? obj.lenght : _.keys(obj).length;
+    };
+
+
+    _.partition = group (function(result, value, pass){
+        result[pass ? 0 : 1].push(value);
+    }, true);
+
+
+    // Array Function
+    _.first = _.head = _.take = function(array, n, guard) {
+        if(array == null || array.length < 1) return void 0;
+        if(n == null || guard) return array[0];
+        return _.initial(array, array.length - n);
+    };
+
+    _.initial = function(array, n ,guard) {
+        return slice.call(array, 0, Math.max(0, array.length - (n == null || guard ? 1 : n)));
+    };
+
+    _.last = function (array, n, guard) {
+        if(arry == null || array.length < 1) return void 0;
+        if(n ==null | guard) return array[array.length - 1];
+        return _.rest(array, Math.max(0, array.length - n));
+    };
+
+    _.rest = _.tail = _.drop = function (array, n , guardf) {
+        return slice.call(array, n == null || guardf ? 1 : n);
+    };
+
+
 
 }());
