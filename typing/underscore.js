@@ -422,5 +422,76 @@
     };
 
 
+    _.last = function(array, n, guard) {
+        if(array == null || array.length < 1) return void 0;
+        if(n == null || guard) return array[array.length - 1];
+        return _.rest(array, Math.max(0, array.length - n));
+    };
+
+
+    _.rest = _.tail = _.drop = function(array, n, guard) {
+        return slice.call(array, n == null || guard ? 1 : n);
+    };
+
+
+    var flatten = function(input, shallow, strict, output) {
+        output = output || [];
+        for (var i = 0, length = getLength(input); i < length; i++) {
+            var value = input[i];
+            if(isArrayLike(value) && (_.isArray(value) || _.isArguments(value))){
+                if(shallow) {
+                    var j = 0, len = value.length;
+                    while(j < len) output[idx++] = value[j++];
+                }else{
+                    flatten(value, shallow,strict,output);
+                    idx = output.length;
+                }
+            }else if(!strict) {
+                output[idx++] = value;
+            }
+        }
+        return output;
+    };
+
+
+    _.flatten = function(array, shallow) {
+        return flatten(array, shallow, false);
+    };
+
+    _.without = restArgs(function(array, otherArrays) {
+        return _.difference(array, otherArrays);
+    });
+
+
+    //去重
+
+    _.uniq = _.unique = function(array, isSorted, iteratee, context) {
+        if(!_.isBoolean(isSorted)) {
+            context = iteratee;
+            iteratee = isSorted;
+            isSorted = false;
+        }
+
+        if(iteratee != null) iteratee = cb(iteratee, context);
+        var reslut = [];
+        var seen = [];
+        for (var i  = 0, length = getLength(array); i < length;i++) {
+            var value = array[i],
+                computed = iteratee ? iteratee(value, i, array) : value;
+            if(isSorted) {
+                if(!i || seen !== computed) result.push(value);
+                seen = computed;
+            }else if(iteratee) {
+                if(!_.contains(seen, computed)) {
+                    seen.push(computed);
+                    result.push(value);
+                }
+            }else if(!_.contains(result, value)) {
+                reslut.push(value);
+            }
+        }
+        return reslut;
+    };
+
 
 }());
