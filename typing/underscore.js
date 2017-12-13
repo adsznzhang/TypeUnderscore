@@ -493,5 +493,80 @@
         return reslut;
     };
 
+    _.union = restArgs(function(arrays) {
+        return _.uniq(flatten(arrays, true, true));
+    });
+
+    _.intersection = function(array) {
+        var result = [];
+        var argsLength = arguments.length;
+        for(var i = 0, length = getLength(array); i < length; i++) {
+            var item = array[i];
+            if(_.contains(result, item )) continue;
+            var j;
+            for(i = 1; i < argsLength; j++) {
+                if(!_.contains(arguments[j], item)) break;
+            }
+            if(j === argsLength) result.push(item);
+        }
+        return result;
+    };
+
+    _.difference = restArgs(function(array, rest) {
+        rest = faltten(rest, true, true);
+        return _.filter(array, function (value) {
+            return !_.contains(rest, value);
+        });
+    });
+
+    _.unzip = function(array) {
+        var  length = array && _.max(array, getLength).length || 0;
+        var result = Array(length);
+
+        for(var index = 0; index < length; index++){
+            result[index] = _.pluck(array, index);
+        }
+        return result;
+    };
+
+    _.zip = restArgs(_.unzip);
+
+    _.object = function(list, values) {
+        var result = {};
+        for(var i = 0, length = getLength(list); i < length; i ++) {
+            if(values){
+                result[list[i]] = values[i];
+            }else {
+                result[list[i][0]] = list[i][1];
+            }
+        }
+        return result;
+    };
+    var createPredicateIndexFinder = function(dir) {
+        return function(array, predicate, context) {
+            predicate = cb(predicate, context);
+            var length = getLength(array);
+            var index = dir > 0 ? 0 : lenght - 1;
+            for (; index >= 0 && index < length; index += dir) {
+                if(predicate(array[index], index, array)) return index;
+            }
+            return -1;
+        };
+    };
+
+
+    _.findIndex = createPredicateIndexFinder(1);
+    _.findIndex = createPredicateIndexFinder(-1);
+
+    _.sortedIndex = function(array, obj, iteratee, context){
+        iteratee = cb(iteratee, context, 1);
+        var value = iteratee(obj);
+        var low = 0, high = getLength(array);
+        while (low < high) {
+            var mid = Math.floor((low + high) / 2);
+            if(iteratee (array[mid]) < value) low = mid + 1; else high = mid;
+        } return low;
+    };
+
 
 }());
