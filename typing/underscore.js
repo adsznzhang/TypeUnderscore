@@ -568,5 +568,84 @@
         } return low;
     };
 
+    var createIndexFinder = function(dir, predicateFind, sortedIndex) {
+        return function(array, item, idx) {
+            var i = 0, length = getLength(array);
+            if(typeof idx == 'number') {
+                if(dir > 0) {
+                    i = idx >= 0 ? idx : Math.max(idx + length, i);
+                }else {
+                    length = idx >= 0 ? Math.min(idx + 1, length) : idx + length + 1;
+                }
+            } else if (sortedIndex && idx && length){
+                idx = sortedIndex(array, item);
+                return array[idx] === item ? idx : -1;
+            }
+            if(item !== item) {
+                idx = predicateFind(slice.call(array, i ,length), _.isNaN);
+                return idx >= 0 ? idx + i : -1;
+            }
+            for(idx = dir > 0 ? i : length -1;idx >= 0 && idx < length;idx += dir) {
+                if(array[idx] === item) return idx;
+            }
+            return -1;
+        };
+    };
+
+
+    _.indexOf = createIndexFinder(1, _.findIndex, _.sortedIndex);
+
+    _.lastIndexOf = createIndexFinder(-1, _.findLastIndex);
+
+
+    _.range = function(start, stop, step) {
+        if(stop == null) {
+            stop = start || 0;
+            start = 0;
+        }
+
+        if(!step) {
+            step = stop < start ? -1 : 1;
+        }
+
+        var length = Math.max(Math.ceil((stop - start) / step), 0);
+        var range = Array(length);
+
+        for (var idx = 0; idx < length; idx++, start += step) {
+            range[idx] = start;
+        }
+
+        return range;
+    };
+
+    _.chunk = function(array, count) {
+        if(count == null || count < 1) return [];
+
+        var result = [];
+        var i = 0, length = array.length;
+        while(i < length) {
+            result.push(slice.call(array, i, i += count));
+        }
+        return result;
+    };
+
+
+    var executeBound = function(sourceFunc, boundFunc, context, callingContext, args) {
+        if(!(callingContext instanceof boundFunc)) return sourceFunc.apply(context, args);
+        var self = baseCreate(sourceFunc.prototype);
+        var result = sourceFunc.apply(self, args);
+        if(_.isObject(result)) return result;
+        return self;
+    };
+
+    _.bind = restArgs(function(func, context, args){
+        if(!_.isFunction(func)) throw new TypeError('Bind must be called on a function');
+        var bound = restArgs(function(callArgs){
+            return executeBound(func, bound, context, this, args.concat(callArgs));
+        });
+        return bound;
+    });
+
+    
 
 }());
