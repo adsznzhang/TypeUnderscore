@@ -646,6 +646,50 @@
         return bound;
     });
 
-    
+    _.partial = restArgs(function(func, boundArgs){
+        var placeholder = _.partial.placeholder;
+        var bound = function() {
+            var position = 0, length = boundArgs.length;
+            var args = Array(length);
+            for(var i = 0; i < length; i++){
+                args[i] = boundArgs[i] === placeholder ? arguments[position++] : boundArgs[i];
+            }
+            while(position < arguments.length) args.push(arguments[position++]);
+            return executeBound(func, bound, this, this, args);
+        };
+        return bound;
+    });
+
+    _.partial.placeholder = _;
+
+    _.bindAll = restArgs(function(obj, keys) {
+        keys = flatten(keys, false, false);
+        var index = keys.length;
+        if(index < 1) throw new Error('bindAll must be passed function names');
+        while(index--){
+            var key = keys[index];
+            obj[key] = _.bind(obj[key], obj);
+        }
+    });
+
+    _.momoize = function(func, hasher) {
+        var memoize = function(key) {
+            var cache = memoize.cache;
+            var address = '' + (hasher ? hasher.apply(this, arguments) : key);
+            if(!_.has(cache, address)) cache[address] = func.apply(this, arguments);
+            return cache[address];
+        };
+        memoize.cache = {};
+        return memoize;
+    };
+
+    _.delay = restArgs(function(func, wait, args) {
+        return setTimeout(function(){
+            return func.apply(null, args);
+        }, wait);
+    });
+
+    _.defer = _.partial(_.dealy, _, 1);
+
 
 }());
