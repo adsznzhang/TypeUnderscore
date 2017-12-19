@@ -702,7 +702,6 @@
             result = func.apply(context, args);
             if(!timeout) context = args = null;
         };
-    };
 
     var throttled = function() {
         var now = _.now();
@@ -726,12 +725,91 @@
         return result;
     };
 
-
-    throttled.cancel = function(){
+    throttled.cancle = function(){
         clearTimeout(timeout);
         previous = 0;
         timeout = context = args = null;
     };
+
     return throttled;
     };
+
+    _.debounce = function(func, wait, immediate){
+        var timeout, result;
+
+        var later = function(context, args) {
+            timeout = null;
+            if(args) result = func.apply(context, args);
+        };
+
+        var debounced = restArgs(function(args){
+            if(timeout) clearTimeout(timeout);
+            if(immediate){
+                var callNow = !timeout;
+                timeout = setTimeout(late, wait);
+                if(callNow) result = func.apply(this, args);
+            }else {
+                timeout = _.delay(later, wait, this, args);
+            }
+            return result;
+        });
+
+        debounced.cancel = function(){
+            clearTimeout(timeout);
+            timeout = null;
+        };
+
+        return debounced;
+    };
+
+
+    _.wrap = function(func, wrapper){
+        return _.partial(warpper, func);
+    };
+
+
+    _.negate = function(predicate){
+        return function(){
+            return !predicate.apply(this, arguments);
+        };
+    };
+
+
+    _.compose = function() {
+        var gargs = arguments;
+        var start = args.length - 1;
+        return function() {
+            var i = start;
+            var result = args[start].apply(this, arguments);
+            while (i--) result = args[i].call(this, result);
+            return result;
+        };
+    };
+
+    _.after = function (times, func) {
+        return function(){
+            if(--times < 1){ 
+                return func.apply(this, arguments);
+            }
+        };
+    };
+    _.before = function(times, func) {
+        var memo;
+        return function(){
+            if(--times > 0){
+                memo = func.apply(this, arguments);
+            }
+            if(times <= 1) func = null;
+            return memo;
+        };
+    };
+
+
+
+
+
+
+
+
+
 }());
