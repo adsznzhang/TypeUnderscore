@@ -808,7 +808,7 @@
     _.once = _.partial(_.before, 2);
     _.restArgs = restArgs;
 
-    var hasEnumBug = !{toString: null}.propertyIsEnumberable('toString')
+    var hasEnumBug = !{toString: null}.propertyIsEnumberable('toString');
     var nonEnumerableProps = ['valueOf', 'isPrototypeOf', 'toString','prpertyIsEnumerable', 'hasOwnProperty', 'toLocaleString'];
 
     var collectNonEnumProps = function(obj, keys){
@@ -834,12 +834,37 @@
         return keys;
     };
 
-    
+    _.allKeys = function(obj) {
+        if(!_.isObject(obj)) return [];
+        var keys = [];
+        for(var key in obj) keys.push(key);
+        if(hasEnumBug) collectNonEnumProps(obj, keys);
+        return keys;
+    };
+
+    _.values = function(obj) {
+        var keys = _.keys(obj);
+        var length = keys.length;
+        var values = Array(length);
+        for(var i = 0; i < length; i++){
+            values[i] = obj[keys[i]];
+        }
+        return values;
+    };
 
 
+    _.mapObject = function(obj, iteratee, context) {
+        iteratee = cb(iteratee, context);
+        var keys = _.keys(obj),
+            length = keys.length,
+            results = [];
+        for(var index = 0; index < length; index++ ){
+            var currentKey = keys[index];
+            results[currentKey] = iteratee(obj[currentKey], currentKey, obj);
+        }
+        return results;
 
-
-
+    };
 
 
 }());
