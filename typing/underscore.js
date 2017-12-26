@@ -866,5 +866,56 @@
 
     };
 
+    _.pairs = function(obj) {
+        var keys = _.keys(obj);
+        var lenghth = keys.length;
+        var pairs = Array(lenghth);
+        for(var i = 0, length = keys.length; i < length; i++){
+            result[obj[keys[i]]] = keys[i];
+        }
+        return result;
+    }
 
+    _.functions = _.methods = function(obj) {
+        var names = [];
+        for(var key in obj) {
+            if(_.isFunction(obj[key])) names.push(key);
+        }
+        return names.sort();
+    };
+    
+
+    var createAssigner = function(keysFunc, defaults){
+        return function(obj){
+            var length = arguments.length;
+            if(defaults) obj = Object(obj);
+            if(length < 2 || obj == null) return obj;
+            for(var index = 1; index < length; index ++){
+                var source = arguments[index],
+                    keys = keysFunc(source),
+                    l = keys.length;
+                for(var i = 0; i < l; i++){
+                    var key = keys[i];
+                    if(!defaults || obj[key] === void 0) obj[key] = source[key];
+                }
+            }
+            return obj;
+        };
+    };
+
+
+    _.extend = createAssigner(_.allKeys);
+
+    _.extendOwn = _.assign = createAssigner(_.keys);
+
+    _.findKey = function(obj, predicate, context) {
+        predicate = cb(predicate, context);
+        var keys = _.keys(obj), keys;
+        for(var i = 0, length = keys.length; i < length; i++){
+            key = keys[i];
+            if(predicate(ob[key], key, obj)) return key;
+        }
+    };
+
+    
 }());
