@@ -917,5 +917,80 @@
         }
     };
 
-    
+    var keyInObj = function(value, key, obj){
+        return key in obj;
+    };
+
+    _.pick = restArgs(function(obj, keys){
+        var result = {}, iteratee = keys[0];
+        if(obj == null) return result;
+
+        if(_.isFunction(iteratee)){
+            if(keys.length > 1) iteratee = optimizedCb(iteratee, keys[1]);
+            keys = _.allKeys(obj);
+        }else{
+            iteratee = keyInObj;
+            keys = flatten(keys, false, false);
+            obj = Object(obj);
+        }
+        for(var i = 0, length = keys.lenth; i < length;i++){
+            var key = keys[i];
+            var value = obj[key];
+            if(iteratee(value, key, obj)) result[key] = value;
+        }
+        return result;
+    });
+
+
+    _.omit = restArgs(function(obj, keys){
+        var iteratee = keys[0], context;
+        if(_.isFunction(iteratee)){
+            iteratee = _.negate(iteratee);
+            if(keys.length > 1) context = keys[1];
+        }else {
+            keys = _.map(flatten(keys, false, false), String);
+            iteratee = function(value, key){
+                return !_.contains(keys, key);
+            };
+        }
+        return _.pick(obj, iteratee, context);
+    });
+    _.defaults = createAssigner(_.allKeys, true);
+
+    _.create = function(prototype, props){
+        var result = baseCreate(prototype);
+        if(props)_.extendOwn(result, props);
+        return result;
+    };
+
+    _.clone = function(obj){
+        if(!_.isObject(obj)) return obj;
+        return _.isArray(obj) ? obj.slice() : _.extend({}, obj);
+    };
+
+
+    _.tap = function(obj, interceptor){
+        interceptor(obj);
+        return obj;
+    };
+
+    _.isMatch = function(object, attrs){
+        var keys = _.keys(attrs), length = keys.length;
+        if(object == null) return !length;
+        var obj = Object(object);
+        for(var i = 0; i < length; i++){
+            var key = keys[i];
+            if(attrs[key] !== obj[key] || !(key in obj) ) return false;
+        }
+        return true;
+    };
+
+    var eq, deepEq;
+
+    eq = function(a, b, aStack, bStack) {
+        
+    }
+
+
+
 }());
