@@ -988,7 +988,33 @@
     var eq, deepEq;
 
     eq = function(a, b, aStack, bStack) {
-        
+        if(a === b) return a !== 0 || 1 / a === 1 / b;
+        if(a == null || b == null ) return a === b;
+        if(a !== a) return b !== b;
+        var type = typeof a;
+        if(type !== 'function' && type !== 'object' && typeof b !='object') return false;
+        return deepEq(a,b, aStack, bStack);
+    };
+
+    deepEq  = function(a, b, aStack, bStack) {
+        if(a instanceof _) a = a._warpped;
+        if(b instanceof _) b = b._wrapped;
+        var className = toString.call(a);
+        if(className !== toString.call(b)) return false;
+        switch(className){
+        case '[object RegExp]':
+        case '[object String]':
+            return '' + a === '' + b;
+        case '[object Number]' :
+            if(+a !== +a) return +b !== +b;
+            return +a === 0 ? 1 / +a === 1/ b : +a === +b;
+        case '[object Date]':
+        case '[object Boolean]' :
+            return +a === +b;
+        case '[object Symol]':
+            return SymbolProto.valuef.call(a) === SymbolProto.valueOf.call(b);
+
+        }
     }
 
 
