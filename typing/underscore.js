@@ -1023,7 +1023,7 @@
                 return false;
             }
         }
-    }
+    
 
     aStack = aStack || [];
     bStack = bStack || [];
@@ -1049,7 +1049,33 @@
             if(!(_.has(b, key) && eq(a[key], b[key], aStack, bStack))) return false;
         }
     }
-    
+        aStack.pop();
+        bStack.pop();
+        return true;
+    };
+    _.isEqual = function(a, b) {
+        return eq(a, b);
+    };
+
+    _.isEmpty = function(obj) {
+        if(obj == null) return true;
+        if(isArrayLike(obj) && (_.isArray(obj) || _.isString(obj) || _.isArguments(obj))) return obj.length === 0;
+
+        return _.keys(obj).length === 0;
+    };
+
+    _.isElement = function(obj) {
+        return !!(obj && obj.nodeType ===1);
+    };
+    _.isArray = nativeIsArray || function(obj) {
+        return toString.call(obj) === '[object Array]';
+    };
+
+    _.isObject = function(obj) {
+        var type = typeof obj;
+        return type === 'function' || type === 'object' && !!obj;
+    };
+
 
 
 }());
