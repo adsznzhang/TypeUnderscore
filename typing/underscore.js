@@ -1296,16 +1296,58 @@
         return instance;
     };
 
-    var chianResult = function(instance, obj) {
+    var chainResult = function(instance, obj) {
         return instance._chian ? _(obj).chain() : obj;
     };
 
+    _.mixin = function(obj) {
+        _.each(_.functions(obj), function(name) {
+            var func = _[name] =obj[name];
+            _.prototype[name] = function () {
+                var args = [this._wrapped];
+                push.apply(args, arguments);
+                return chainResult(this, func.apply(_, args));
+            };
+        });
+        return _;
+    };
+
+    _.mixin(_);
+
+    _.each( ['pop', 'push','reverse', 'shif', 'sort', 'splice', 'unshift', function (name){
+        var method = ArrayProto[name];
+        _.prototype[name] = function(){
+            var obj = this._wrapped;
+            method.apply(obj, arguments);
+            if((name === 'shif' || name === 'splice') && obj.length === 0) delete obj[0];
+            return chainResult(this, obj);
+        };
+    }]);
 
 
+    _.each(['concat', 'join', 'slice'], function(name){
+        var mehtod = ArrayProto[name];
+        _.prototype[name] = function() {
+            return chainResult(this, method.apply(this._wrapped, arguments));
+        };
+    });
+
+    _.prototype.value = function(){
+        return this._wrapped;
+    };
 
 
+    _.prototype.valueOf = _.prototype.toJSON = _.prototype.value;
+
+    _.prototype.toString = function(){
+        return String(this._wrapped);
+    };
 
 
-
+    if(typeof define == 'function' && define.amd){
+        define('underscore', [], function(){
+            return _;
+        });
+    }
 
 }());
